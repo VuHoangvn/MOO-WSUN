@@ -1,0 +1,27 @@
+# configuration for this project
+general:
+  pop_size: 50
+  generations: 500
+  init_sensor_rate: 0.75
+  sensor_coverages: 3
+
+# multi-objective different optimization
+mode:
+  pg: 0.5
+  pm: 0.15
+  pp: 0.1
+
+# nondominated sorting genetic algorithm II
+nsga_ii:
+  crossover_rate: 0.1
+  mutation_rate: 0.05
+
+# multi-objective evolution algorithm based on decomposition
+moea_d:
+  crossover_rate: 0.1
+  mutation_rate: 0.05
+
+# improve teaching-learning-based optimization
+itlbo:
+  num_teacher: 5
+  adaptive_teaching_factor: [1,2]
