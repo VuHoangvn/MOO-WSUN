@@ -12,22 +12,20 @@ from config.constant import Constants
 cfg_all = lib_commons.read_yaml(ROOT + "config/config.yaml")
 cfg = cfg_all["general"]
 
-def createSet(data):
-    num_ss = data.num_of_sensors
-    Y = int(num_ss * cfg.init_sensor_rate)
-    individual = np.zeros(num_ss)
+def createSet(sensor_quantity):
+    Y = int(sensor_quantity * cfg["init_sensor_rate"])
+    individual = np.zeros(sensor_quantity)
     i = Y
     while i > 0:
-        rd = random.randint(0, num_ss-1)
+        rd = random.randint(0, sensor_quantity-1)
         if individual[rd] == 0:
             individual[rd] = 1
             i -= 1
     
     return individual
 
-def initialPopulation(data):
+def initialPopulation(sensor_quantity):
     population = []
-    for _ in range(cfg.pop_size):
-        population.append(createSet(data))
-    
+    for _ in range(cfg["pop_size"]):
+        population.append(createSet(sensor_quantity))
     return population

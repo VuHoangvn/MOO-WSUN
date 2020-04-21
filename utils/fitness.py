@@ -27,10 +27,11 @@ class Fitness:
 	def set_population(self, new_population):
 		self.population = new_population
 		self.pop_size = len(new_population)
+		
 	
 	def get_coverage(self):
 		m = self.data.num_of_relays
-		k = cfg.sensor_coverages
+		k = cfg["sensor_coverages"]
 		elem_cover = np.zeros((self.pop_size, m))
 		ss_cover = self.data.sensor_coverage
 		for s in range(self.pop_size):
