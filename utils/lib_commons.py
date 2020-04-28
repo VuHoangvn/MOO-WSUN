@@ -10,7 +10,8 @@ def read_yaml(filepath):
         data_loaded = yaml.safe_load(stream)
     return data_loaded
 
-def fast_non_dominated_sort(coverage, loss, squantity, size):
+def fast_non_dominated_sort(cost):
+    size = len(cost)
     Sp = np.empty(size, dtype=np.object)
     F = np.empty(size + 1, dtype=np.object)
     for i in range(size):
@@ -20,11 +21,11 @@ def fast_non_dominated_sort(coverage, loss, squantity, size):
     rank = [0] * (size+1)
 
     for i in range(size):
-        for j in range(size):
-            if(coverage[i] >= coverage[j] and loss[i] <= loss[j]) and squantity[i] <= squantity[j] and ((coverage[i] > coverage[j] or loss[i] < loss[j]) or squantity[i] < squantity[j]):
+        for j in range(i+1, size):
+            if(cost[i].coverage > cost[j].coverage and cost[i].loss < cost[j].loss) and cost[i].squantity < cost[j].squantity:
                 Sp[i].append(j)
             else:
-                if(coverage[i] <= coverage[j] and loss[i] >= loss[j]) and squantity[i] >= squantity[j] and ((coverage[i] < coverage[j] or loss[i] > loss[j]) or squantity[i] > squantity[j]):
+                if(cost[i].coverage <= cost[j].coverage and cost[i].loss >= cost[j].loss) and cost[i].squantity >= cost[j].squantity:
                     Sp[j].append(i)
                     Np[i] += 1
     for i in range(size):
@@ -43,9 +44,17 @@ def fast_non_dominated_sort(coverage, loss, squantity, size):
                     Q.append(z)
         i += 1
         F[i] = Q
-    rank[size] = i-1
-    
+    rank[size] = i
     return rank
+
+def find_bests(rank):
+    p_best = []
+    
+    for i in range(len(rank)):
+        if rank[i] == 1:
+            p_best.append(i)
+    
+    return p_best
 
 def write_to_file(filename, coverage, loss, squantity):
     f = open(filename, "a")

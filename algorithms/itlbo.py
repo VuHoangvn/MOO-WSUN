@@ -3,6 +3,8 @@ import os
 import numpy as np
 import random
 
+from .algorithm import Algorithm
+
 ROOT = os.path.dirname(os.path.abspath(__file__))+"/../"
 sys.path.append(ROOT)
 
@@ -18,15 +20,15 @@ threshold = cfg["mean_threshold"]
 subject = [0,1,2]   # coverage, loss, squantity
 
 
-class ITLBO:
-    def __init__(self, population, data):
-        self.population = population
-        self.indl_size = len(population[0])
-        self.data = data
-        self.pop_size = len(population)
-        self.teachers = []
-        self.fitness = Fitness(population, data)
-        self.cost = self.fitness.getCost()
+class ITLBO(Algorithm):
+    # def __init__(self, population, data):
+    #     self.population = population
+    #     self.indl_size = len(population[0])
+    #     self.data = data
+    #     self.pop_size = len(population)
+    #     self.teachers = []
+    #     self.fitness = Fitness(population, data)
+    #     self.cost = self.fitness.getCost()
 
     def teacher_selection(self):
         max_coverage = max(self.cost, key=lambda k: k.coverage)
@@ -41,32 +43,40 @@ class ITLBO:
         self.teachers.append(squantity_teacher)
 
     def get_mean_student(self):
-        mean_student = [0] * self.indl_size
+        mean_student = np.zeros(self.indl_size)
         
         for indl in self.population:
             for i in range(self.indl_size):
                 mean_student[i] += indl[i]/self.pop_size
         
-        mean_student = [0 if x < threshold else 1 for x in mean_student]
+        for i in range(self.indl_size):
+            if mean_student[i] < threshold:
+                mean_student[i] = 0
+            else:
+                mean_student[i] = 1
         
         return mean_student
 
+    
     def teacher_phase(self):
         mean_student = self.get_mean_student()
 
         ## get temporary value like midterm
         temp = []
         for i in range(self.pop_size):
-            temp_indl = mean_student if random.random() > TF else mutate(self.population[i], mutation_rate)
-            temp.append(temp_indl)
-
+            student = np.zeros(self.indl_size)
+            for j in range(self.indl_size):
+                student[j] = mean_student[j] if random.random() > TF else mutate(self.population[i], mutation_rate)[j]
+            temp.append(student)
         ## calculate temporary cost
         self.fitness.set_population(np.array(temp))
         temp_cost = self.fitness.getCost()
 
         ## modify original itlbo by teaching each subject with its own teacher
         ## get difference_mean
-        difference_mean = [[0]*self.indl_size]*self.pop_size
+        difference_mean = []
+        for i in range(self.pop_size):
+            difference_mean.append(np.zeros(self.indl_size))
         
         for subject_id, teacher_id in zip(subject, self.teachers):
             teacher = self.population[teacher_id]
@@ -84,7 +94,10 @@ class ITLBO:
         difference_cost = self.fitness.getCost()
         
         ## student after teacher phase
-        middle_students = [[0]*self.indl_size]*self.pop_size
+        middle_students = []
+        for i in range(self.pop_size):
+            middle_students.append(np.zeros(self.indl_size))
+
         for subject_id in subject:
             for id in range(self.pop_size):
                 for i in range(self.indl_size):
@@ -95,15 +108,16 @@ class ITLBO:
                     else:
                         middle_students[id][i] = difference_mean[id][i]
         
-        self.middle_students = middle_students
-       
+        self.middle_students = self.select_by_non_sorting_dominated(self.population, middle_students)
 
     def learner_phase(self):
         interactive_threshold = cfg["interactive_threshold"]
-        temp = [[0]*self.indl_size]*self.pop_size
+        temp = []
+        for i in range(self.pop_size):
+            temp.append(np.zeros(self.indl_size))
         self.fitness.set_population(np.array(self.middle_students))
         middle_cost = self.fitness.getCost()
-        print(len(middle_cost))
+
         ## temporary students interactives with each other
         ## each student can ask another student to improve knowledge
         for subject_id in subject:
@@ -123,7 +137,10 @@ class ITLBO:
         ## final student obtain knowledge:
         self.fitness.set_population(temp)
         temp_cost = self.fitness.getCost()
-        final_students = [[0]*self.indl_size]*self.pop_size
+        final_students = []
+        for i in range(self.pop_size):
+            final_students.append(np.zeros(self.indl_size))
+
         for subject_id in subject:
             for i in range(self.pop_size):
                 rand = random.random()
@@ -131,6 +148,16 @@ class ITLBO:
                     final_students[i] = self.middle_students[i]
                 else:
                     final_students[i] = temp[i]
+        
+        new_gen = self.select_by_non_sorting_dominated(self.middle_students, final_students)
+        self.population = new_gen
+        self.fitness.set_population(new_gen)
+        self.cost = self.fitness.getCost()
+        self.rank = lib_commons.fast_non_dominated_sort(self.cost)
+        self.bests = lib_commons.find_bests(self.rank)
+        print('\n ', len(self.bests))
+        for i in self.bests:
+            print(self.cost[i])
 
     def next_generation(self):
         self.teacher_selection()
@@ -140,8 +167,9 @@ class ITLBO:
     def run(self):
         generations = cfg["generations"]
         print("[INFO] Running ITLBO...")
-        # for _ in range(0, generations):
-        self.next_generation()
-        
+        for _ in range(0, generations):
+            self.next_generation()
+       
+
         
             

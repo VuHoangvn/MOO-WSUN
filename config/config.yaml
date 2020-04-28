@@ -1,7 +1,7 @@
 # configuration for this project
 general:
   pop_size: 50
-  generations: 500
+  generations: 5
   init_sensor_rate: 0.75
   sensor_coverages: 3
 
@@ -10,6 +10,7 @@ mode:
   pg: 0.5
   pm: 0.15
   pp: 0.1
+  generations: 100
 
 # nondominated sorting genetic algorithm II
 nsga_ii:
