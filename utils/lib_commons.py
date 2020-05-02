@@ -1,6 +1,9 @@
 import yaml
 import numpy as np 
 
+MAX_NUM = 1e6
+
+
 def read_yaml(filepath):
     '''
         Input a string filepath,
@@ -9,6 +12,15 @@ def read_yaml(filepath):
     with open(filepath, 'r') as stream:
         data_loaded = yaml.safe_load(stream)
     return data_loaded
+
+def generate_lamda(size):
+    lamda = np.zeros((size, 3))
+    dis = round(1.0/(1.1*size), 3)
+    for i in range(1, size+1):
+        lamda[i-1][0] = round(abs(1 - dis * i), 2)
+        lamda[i-1][1] = round(abs(1 - dis * (i + 1)), 2)
+        lamda[i-1][2] = round(abs(1 - dis * (i + 2)), 2)
+    return lamda
 
 def fast_non_dominated_sort(cost):
     size = len(cost)
@@ -47,6 +59,36 @@ def fast_non_dominated_sort(cost):
     rank[size] = i
     return rank
 
+def crowding_distance_assignment(cost, size):
+    l = len(cost)
+    I = [0] * l
+    coverage_sort = sorted(range(l), key=lambda k: cost[k][0])
+    loss_sort = sorted(range(l), key=lambda k: cost[k][1])
+    squantity_sort = sorted(range(l), key=lambda k: cost[k][2])
+
+    I[coverage_sort[0]] = MAX_NUM    
+    I[coverage_sort[-1]] = MAX_NUM
+    I[loss_sort[0]] = MAX_NUM    
+    I[loss_sort[-1]] = MAX_NUM
+    I[squantity_sort[0]] = MAX_NUM
+    I[squantity_sort[-1]] = MAX_NUM
+
+    normalize_coverage = cost[coverage_sort[-1]][0] - cost[coverage_sort[0]][0]
+    normalize_loss = cost[loss_sort[-1]][1] - cost[loss_sort[0]][1]
+    normalize_squantity = cost[squantity_sort[-1]][2] - cost[squantity_sort[0]][2]
+
+    for i in range(1, l-1):
+        I[coverage_sort[i]] += (cost[coverage_sort[i+1]][0] - cost[coverage_sort[i-1]][0]) / normalize_coverage
+        I[loss_sort[i]] += (cost[loss_sort[i+1]][1] - cost[loss_sort[i-1]][1]) / normalize_loss
+        I[squantity_sort[i]] += (cost[squantity_sort[i+1]][2] - cost[squantity_sort[i-1]][2]) / normalize_squantity
+    
+    dist_sort = sorted(range(l), key=lambda k: I[k])
+    extend_index = []
+    for k in dist_sort:
+        extend_index.append(k)
+    
+    return extend_index[:size]
+
 def find_bests(rank):
     p_best = []
     
@@ -56,7 +98,8 @@ def find_bests(rank):
     
     return p_best
 
-def write_to_file(filename, coverage, loss, squantity):
+def write_to_file(cost, filename):
     f = open(filename, "a")
-    f.write("{}     {}      {}\n".format(coverage, loss, squantity))
+    for i in range(len(cost)):
+        f.write("{}     {}      {}\n".format(cost[i].coverage, cost[i].loss, cost[i].squantity))
     f.close()

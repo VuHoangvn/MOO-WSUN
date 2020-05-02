@@ -7,10 +7,17 @@ ROOT = os.path.dirname(os.path.abspath(__file__))+"/../"
 sys.path.append(ROOT)
 
 import utils.lib_commons as lib_commons
+import utils.lib_commons as lib_commons
 from utils.fitness import Fitness
 
+cfg_all = lib_commons.read_yaml(ROOT + "config/config.yaml")
+cfg = cfg_all["general"]
+min_coverage = cfg["min_coverage"]
+max_sensor_rate = cfg["max_sensor_rate"]
+
 class Algorithm:
-    def __init__(self, population, data):
+    def __init__(self, population, data, outfile):
+        self.outfile = outfile
         self.population = population
         self.indl_size = len(population[0])
         self.data = data
@@ -32,19 +39,59 @@ class Algorithm:
         current_size = 0
         for i in range(1, total_rank[-1]):
             current_rank_elem = []
-            if current_size == self.pop_size:
+            if current_size >= self.pop_size:
                 break
 
             current_elem = list(filter(lambda elem: elem[1] == i, enumerate(total_rank)))
             for elem in current_elem:
+                if total_cost[elem[0]][0] < min_coverage or total_cost[elem[0]][2] > max_sensor_rate * self.indl_size:
+                    continue
                 current_rank_elem.append(total_student[elem[0]])
             
             if total_rank.count(i) + current_size <= self.pop_size:
                 new_pop.extend(current_rank_elem)
                 current_size += len(current_rank_elem)
             else:
-                for j in range(self.pop_size - current_size):
+                for j in range(min(self.pop_size - current_size, len(current_rank_elem))):
                     new_pop.append(current_rank_elem[j])
-                break
         
         return new_pop
+    
+    def binary_selection(self):
+        q_population = np.zeros((self.pop_size, self.indl_size))
+        # binary selection
+        for i in range(self.pop_size):
+            if(i < 3):
+                candicate_1 = random.randint(i+1, i+5)
+                candicate_2 = random.randint(i+1, i+5)
+            elif (i > self.pop_size - 3):
+                candicate_1 = random.randint(i-5, i-1)
+                candicate_2 = random.randint(i-5, i-1)
+            else:
+                candicate_1 = random.randint(i-2, i+2)
+                candicate_2 = random.randint(i-2, i+2)
+
+            if self.rank[candicate_1] < self.rank[candicate_2]:
+                q_population[i] = self.population[candicate_2]
+            else:
+                q_population[i] = self.population[candicate_1]
+        
+        return q_population
+    
+    def uniform_crossover(self, q_population, crossover_rate):
+        for i in range(int(self.pop_size / 2)):
+            for j in range(self.indl_size):
+                if(random.random() < crossover_rate):
+                    temp = q_population[i][j]
+                    q_population[i][j] = q_population[self.pop_size-i-1][j]
+                    q_population[self.pop_size-i-1][j] = temp
+        
+        return q_population
+
+    def random_mutation(self, q_population, mutation_rate):
+        for i in range(self.pop_size):
+            for j in range(self.indl_size):
+                if(random.random() < mutation_rate):
+                    q_population[i][j] = (q_population[i][j] + 1) % 2
+        
+        return q_population

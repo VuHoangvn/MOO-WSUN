@@ -18,6 +18,9 @@ pg = cfg["pg"]
 pm = cfg["pm"]
 pp = cfg["pp"]
 
+min_coverage = cfg_all["general"]["min_coverage"]
+max_sensor_rate = cfg_all["general"]["max_sensor_rate"]
+
 class MODE(Algorithm):
     # def __init__(self, population, data):
     #     self.population = population
@@ -51,17 +54,18 @@ class MODE(Algorithm):
                             break
                     new_population[i][j] = self.population[r][j]
         
-        self.population = new_population
+        # self.population = new_population
         self.fitness.set_population(new_population)
+        new_cost = self.fitness.getCost()
+        for i in range(self.pop_size):
+            if new_cost[i][0] < min_coverage or new_cost[i][2] > max_sensor_rate*self.indl_size:
+                continue
+            self.population[i] = new_population[i]
 
     def selection(self):
         self.cost = self.fitness.getCost()
         self.rank = lib_commons.fast_non_dominated_sort(self.cost)
         self.bests = lib_commons.find_bests(self.rank)
-
-        print('\n ', len(self.bests))
-        for i in self.bests:
-            print(self.cost[i])
 
     def next_generation(self):
         self.crossover()
@@ -69,6 +73,12 @@ class MODE(Algorithm):
 
     def run(self):
         generations = cfg["generations"]
-        print("[INFO] Running ITLBO...")
-        for _ in range(0, generations):
+        print("[INFO] Running MODE...")
+        for i in range(0, generations):
+            print("MODE step ", i, ":")
             self.next_generation()
+        
+        result = []
+        for i in self.bests:
+            result.append(self.cost[i])
+        lib_commons.write_to_file(result, self.outfile)

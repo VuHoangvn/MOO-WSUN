@@ -17,6 +17,8 @@ cfg = cfg_all["itlbo"]
 TF = cfg["teaching_factor"]
 mutation_rate = cfg["mutation_rate"]
 threshold = cfg["mean_threshold"]
+# min_coverage = cfg["min_coverage"]
+# max_sensor_rate = cfg["max_sensor_rate"]
 subject = [0,1,2]   # coverage, loss, squantity
 
 
@@ -155,9 +157,6 @@ class ITLBO(Algorithm):
         self.cost = self.fitness.getCost()
         self.rank = lib_commons.fast_non_dominated_sort(self.cost)
         self.bests = lib_commons.find_bests(self.rank)
-        print('\n ', len(self.bests))
-        for i in self.bests:
-            print(self.cost[i])
 
     def next_generation(self):
         self.teacher_selection()
@@ -167,8 +166,13 @@ class ITLBO(Algorithm):
     def run(self):
         generations = cfg["generations"]
         print("[INFO] Running ITLBO...")
-        for _ in range(0, generations):
+        for i in range(0, generations):
+            print("ITLBO step ", i, ":")
             self.next_generation()
+        result = []
+        for i in self.bests:
+            result.append(self.cost[i])
+        lib_commons.write_to_file(result, self.outfile)
        
 
         

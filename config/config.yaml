@@ -4,6 +4,9 @@ general:
   generations: 5
   init_sensor_rate: 0.75
   sensor_coverages: 3
+  min_coverage: 0.7
+  max_sensor_rate: 0.8
+
 
 # multi-objective different optimization
 mode:
@@ -16,11 +19,14 @@ mode:
 nsga_ii:
   crossover_rate: 0.1
   mutation_rate: 0.05
+  generations: 100
 
 # multi-objective evolution algorithm based on decomposition
 moea_d:
   crossover_rate: 0.1
   mutation_rate: 0.05
+  generations: 100
+  T: 3  # number of neighborhoods
 
 # improve teaching-learning-based optimization
 itlbo:
@@ -29,5 +35,5 @@ itlbo:
   generations: 100
   mean_threshold: 0.75
   teaching_factor: 0.75
-  mutation_rate: 0.5
+  mutation_rate: 0.05
   interactive_threshold: 0.5
