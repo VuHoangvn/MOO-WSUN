@@ -30,26 +30,21 @@ class MOEA_D(Algorithm):
     #     self.fitness = Fitness(population, data)
     #     self.cost = self.fitness.getCost()
         super().__init__(population, data, outfile)
-        self.weight_vectors = self.init_wvs_spread(0)
+        self.weight_vectors = self.init_wvs_spread()
         self.B = self.init_neighborhood()
         self.Z = self.cost[0]
         self.lamda = lib_commons.generate_lamda(self.pop_size) 
         self.new_population = population
         self.EP = []
 
-    def init_wvs_spread(self, rand):
-        wvs = []
-        spread = self.pop_size - rand
-        for i in np.arange(0, 1 + sys.float_info.epsilon, 1/(spread-1)):
-            wvs.append([i, 1 - i])
-        for _ in range(rand):
-            alpha = random.random()
-            wvs.append((alpha, 1 - alpha))
-
-        return np.array(wvs)
-
-    def g_te(self, indl, weight_vector):
-        return np.max(weight_vector * np.abs())
+    def init_wvs_spread(self):
+        lamda = np.zeros((self.pop_size, 3))
+        dis = round(1.0/(1.1*self.pop_size), 3)
+        for i in range(1, self.pop_size+1):
+            lamda[i-1][0] = round(abs(1 - dis * i), 2)
+            lamda[i-1][1] = round(abs(1 - dis * (i + 1)), 2)
+            lamda[i-1][2] = round(abs(1 - dis * (i + 2)), 2)
+        return lamda
 
     def init_neighborhood(self):
         B = np.empty([self.pop_size, T], dtype=int)
@@ -62,44 +57,53 @@ class MOEA_D(Algorithm):
         
         return B
 
-    def generate_offspring(self):
-        # selection
-        q_population = self.binary_selection()
+    def opitmizer(self):
+        self.Y = self.Y
 
-        # uniform cross over
-        q_population = self.uniform_crossover(q_population, crossover_rate)
+    def reproduction(self):
+        Y = np.empty([self.pop_size, self.indl_size])
+        for i in range(self.pop_size):
+            k = np.random.randint(0, len(self.B[i]))
+            l = np.random.randint(0, len(self.B[i]) - 1)
+            if l >= k:
+                l += 1
 
-        # random mutate
-        q_population = self.random_mutation(q_population, mutation_rate)
+            Y[i] = self.one_point_crossover(self.population[k], self.population[l])
+            Y[i] = self.mutation(Y[i], mutation_rate)
+        
+        self.Y = Y
 
-        self.q_population = q_population
+    def improvement(self):
+        self.opitmizer()
 
     def update_Z(self):
+        self.fitness.set_population(self.Y)
+        y_cost = self.fitness.getCost()
+        self.y_cost = y_cost
         for i in range(self.pop_size):
-            if(self.cost[i].coverage > self.Z[0]):
-                self.Z[0] = self.cost[i].coverage
-            if(self.cost[i].loss < self.Z[1]):
-                self.Z[1] = self.cost[i].loss
-            if(self.cost[i].squantity < self.Z[2]):
-                self.Z[2] = self.cost[i].squantity
+            if self.Z[0] < y_cost[i][0]:
+                self.Z._replace(coverage=y_cost[i][0])
+            if self.Z[1] > y_cost[i][1]:
+                self.Z._replace(loss=y_cost[i][1])
+            if self.Z[2] > y_cost[i][2]:
+                self.Z._replace(squantity=y_cost[i][2])
 
-    def generate_new_population(self):
-        self.fitness.set_population(self.q_population)
-        off_cost = self.fitness.getCost()
+    def g_te(self, cost_i, weight_vector):
+        return max([weight_vector[j] * abs(cost_i[j] - self.Z[j]) for j in range(len(cost_i))])
+
+    def update_neighborhood(self):
         for i in range(self.pop_size):
-            max_s = max(abs(self.lamda[i][0] * (self.cost[i].coverage - self.Z[0])), abs(self.lamda[i][1] * (self.cost[i].loss - self.Z[1])), abs(self.lamda[i][2] * (self.cost[i].squantity - self.Z[2])))
-            max_off = max(abs(self.lamda[i][0] * (off_cost[i].coverage - self.Z[0])), abs(self.lamda[i][1] * (off_cost[i].loss - self.Z[1])), abs(self.lamda[i][2] * (off_cost[i].squantity-self.Z[2])))
-
-            if (max_s < max_off):
-                self.new_population[i] = self.q_population[i]
-
-        self.fitness.set_population(self.new_population)
+            for index in self.B[i]:
+                wv = self.weight_vectors[index]
+                if self.g_te(self.y_cost[index], wv) <= self.g_te(self.cost[index], wv):
+                    self.population[index] = self.Y[index]
+        
+        self.fitness.set_population(self.population)
         self.cost = self.fitness.getCost()
         self.rank = lib_commons.fast_non_dominated_sort(self.cost)
         self.bests = lib_commons.find_bests(self.rank)
-    
-    def update_EP(self):
-        print(len(self.bests))
+
+    def updata_EP(self):
         if len(self.EP) == 0:
             for i in self.bests:
                 self.EP.append(self.cost[i])
@@ -129,12 +133,12 @@ class MOEA_D(Algorithm):
                     self.EP.append(self.cost[i])
 
     def next_generation(self):
-        pass
-        # self.update_Z()
-        # self.generate_offspring()
-        # self.generate_new_population()
-        # self.update_EP()
-        # print(self.EP)
+        self.reproduction()
+        self.improvement()
+        self.update_Z()
+        self.update_neighborhood()
+        self.updata_EP()
+        print(len(self.EP))
 
     def run(self):
         generations = cfg["generations"]

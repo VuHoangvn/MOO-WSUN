@@ -95,3 +95,25 @@ class Algorithm:
                     q_population[i][j] = (q_population[i][j] + 1) % 2
         
         return q_population
+
+    def one_point_crossover(self, p1, p2):
+        size = len(p1)
+
+        y = p1
+        cut_point = random.randint(1, size)
+        if np.random.randint(2) == 0:
+            for i in range(cut_point, size):
+                y[i] = p2[i]
+        else:
+            for i in range(cut_point):
+                y[i] = p2[i]
+        return y
+    
+    def mutation(self, indl, mutation_rate):
+        size = len(indl)
+        for i in range(size):
+            if random.random() < mutation_rate:
+                mutation_point = np.random.randint(size)
+                indl[i], indl[mutation_point] = indl[mutation_point], indl[i]
+        
+        return indl
