@@ -67,8 +67,6 @@ class NSGA_II(Algorithm):
         current_num = 0     # current number of individuals in new population
         new_population = []
         self.result = []
-        # print(total_rank)
-        # print(total_rank[-1])
         for i in range(1, total_rank[-1]):
             new_individual = []
             new_element_cost = []
@@ -93,7 +91,6 @@ class NSGA_II(Algorithm):
                     new_population.append(new_individual[j])
                     current_num += 1
                 if i == 1:
-                    print(i)
                     for j in extend_index:
                         self.result.append(new_element_cost[j])
 

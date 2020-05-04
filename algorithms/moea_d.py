@@ -138,7 +138,6 @@ class MOEA_D(Algorithm):
         self.update_Z()
         self.update_neighborhood()
         self.updata_EP()
-        print(len(self.EP))
 
     def run(self):
         generations = cfg["generations"]
