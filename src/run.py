@@ -15,20 +15,20 @@ def run(data_file, iteration):
     sensor_quantity = data.num_of_sensors
     population = initialPopulation(sensor_quantity)
 
-    # output_itlbo = "../output/itlbo/gen_" + str(iteration)
+    output_itlbo = "../output/itlbo/gen_" + str(iteration)
     output_nsga_ii = "../output/nsga_ii/gen_" + str(iteration)
-    # output_mode = "../output/mode/gen_" + str(iteration)
-    # output_moea_d = "../output/moea_d/gen_" + str(iteration)
+    output_mode = "../output/mode/gen_" + str(iteration)
+    output_moea_d = "../output/moea_d/gen_" + str(iteration)
 
-    # itlbo = ITLBO(population, data, output_itlbo)
-    # moea_d = MOEA_D(population, data, output_moea_d)
+    itlbo = ITLBO(population, data, output_itlbo)
+    moea_d = MOEA_D(population, data, output_moea_d)
     nsga_ii = NSGA_II(population, data, output_nsga_ii)
-    # mode = MODE(population, data, output_mode)
+    mode = MODE(population, data, output_mode)
     
     # mode.run()
     # moea_d.run()
-    nsga_ii.run()
-    # itlbo.run()
+    # nsga_ii.run()
+    itlbo.run()
 
     
 if __name__ == '__main__':

@@ -75,8 +75,8 @@ class NSGA_II(Algorithm):
 
             new_element = list(filter(lambda elem: elem[1] == i, enumerate(total_rank)))
             for elem in new_element:
-                if total_cost[elem[0]][0] < min_coverage or total_cost[elem[0]][2] > max_sensor_rate * self.indl_size:
-                    continue
+                # if total_cost[elem[0]][0] < min_coverage or total_cost[elem[0]][2] > max_sensor_rate * self.indl_size:
+                #     continue
                 new_individual.append(total_population[elem[0]])
                 new_element_cost.append(total_cost[elem[0]])
 
@@ -94,7 +94,6 @@ class NSGA_II(Algorithm):
                     for j in extend_index:
                         self.result.append(new_element_cost[j])
 
-                break
         self.population = new_population
         self.fitness.set_population(self.population)
         self.cost = self.fitness.getCost()
