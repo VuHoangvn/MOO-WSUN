@@ -56,10 +56,17 @@ class Input:
         for rn in range(self.num_of_relays):
             for sn in range(self.num_of_sensors):
                 d = distance(self.sensors[sn], self.relays[rn])
-                x_atan = numpy.arctan(
-                    (self.relays[rn].y-self.relays[sn].y)/(self.relays[rn].x - self.sensors[sn].x))
-                z_atan = numpy.arctan(
-                    (self.relays[rn].z - self.relays[sn].z)/d)
+                if (self.relays[rn].x - self.sensors[sn].x) == 0:
+                    x_atan = 0
+                else:
+                    x_atan = numpy.arctan(
+                        (self.relays[rn].y-self.relays[sn].y)/(self.relays[rn].x - self.sensors[sn].x))
+                
+                if d == 0:
+                    z_atan = 0
+                else:
+                    z_atan = numpy.arctan(
+                        (self.relays[rn].z - self.relays[sn].z)/d)
 
                 if (d <= 2*R) and (x_atan >= 0 and x_atan <= 1.57) and (z_atan >= 0 and z_atan <= 1.57):
                     sensor_coverage[rn][sn] = 1

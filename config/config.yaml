@@ -32,7 +32,7 @@ moea_d:
 itlbo:
   num_teacher: 5
   adaptive_teaching_factor: [1,2]
-  generations: 10
+  generations: 100
   mean_threshold: 0.75
   teaching_factor: 0.75
   mutation_rate: 0.05

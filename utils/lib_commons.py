@@ -25,7 +25,7 @@ def generate_lamda(size):
 def fast_non_dominated_sort(cost):
     size = len(cost)
     Sp = np.empty(size, dtype=np.object)
-    F = np.empty(size + 1, dtype=np.object)
+    F = np.empty(size + 2, dtype=np.object)
     for i in range(size):
         Sp[i] = []
         F[i] = []
@@ -77,6 +77,9 @@ def crowding_distance_assignment(cost, size):
     normalize_loss = cost[loss_sort[-1]][1] - cost[loss_sort[0]][1]
     normalize_squantity = cost[squantity_sort[-1]][2] - cost[squantity_sort[0]][2]
 
+    if normalize_coverage == 0 or normalize_loss == 0 or normalize_squantity == 0:
+        return range(size)
+
     for i in range(1, l-1):
         I[coverage_sort[i]] += (cost[coverage_sort[i+1]][0] - cost[coverage_sort[i-1]][0]) / normalize_coverage
         I[loss_sort[i]] += (cost[loss_sort[i+1]][1] - cost[loss_sort[i-1]][1]) / normalize_loss
@@ -99,7 +102,7 @@ def find_bests(rank):
     return p_best
 
 def write_to_file(cost, filename):
-    f = open(filename, "a")
+    f = open(filename, "w")
     for i in range(len(cost)):
         f.write("{}     {}      {}\n".format(cost[i].coverage, cost[i].loss, cost[i].squantity))
     f.close()

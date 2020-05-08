@@ -54,6 +54,15 @@ class Algorithm:
             else:
                 for j in range(min(self.pop_size - current_size, len(current_rank_elem))):
                     new_pop.append(current_rank_elem[j])
+                    current_size += 1
+        
+        if len(new_pop) == 0:
+            for i in range(self.pop_size):
+                new_pop.append(total_student[i+2])
+        if current_size < self.pop_size:
+            stop = len(new_pop)
+            for i in range(self.pop_size - current_size):
+                new_pop.append(new_pop[random.randint(0, stop-1)])
         
         return new_pop
     
