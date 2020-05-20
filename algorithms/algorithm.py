@@ -2,6 +2,7 @@ import sys
 import os
 import numpy as np
 import random
+import copy
 
 ROOT = os.path.dirname(os.path.abspath(__file__))+"/../"
 sys.path.append(ROOT)
@@ -31,6 +32,9 @@ class Algorithm:
     def select_by_non_sorting_dominated(self, curr_pop, temp_pop):
         ## first non dominated sort
         total_student = curr_pop + temp_pop
+        # print(len(total_student))
+        # total_student = list(map(np.asarray, set(map(tuple, total_student))))
+        # print(len(total_student))
         self.fitness.set_population(np.array(total_student))
         total_cost = self.fitness.getCost()
         total_rank = lib_commons.fast_non_dominated_sort(total_cost)
@@ -44,6 +48,8 @@ class Algorithm:
 
             current_elem = list(filter(lambda elem: elem[1] == i, enumerate(total_rank)))
             for elem in current_elem:
+                if total_cost[elem[0]][0] < min_coverage or total_cost[elem[0]][2] > max_sensor_rate * self.indl_size:
+                    continue
                 current_rank_elem.append(total_student[elem[0]])
             
             if total_rank.count(i) + current_size <= self.pop_size:
@@ -54,10 +60,10 @@ class Algorithm:
                     new_pop.append(current_rank_elem[j])
                     current_size += 1
         
-        # if len(new_pop) == 0:
-        #     for i in range(self.pop_size):
-        #         index = np.random.randint(len(total_student))
-        #         new_pop.append(total_student[index])
+        if len(new_pop) == 0:
+            for i in range(self.pop_size):
+                index = np.random.randint(len(total_student))
+                new_pop.append(total_student[index])
         if current_size < self.pop_size:
             stop = len(new_pop)
             for i in range(self.pop_size - current_size):
@@ -119,8 +125,9 @@ class Algorithm:
     
     def mutation(self, indl, mutation_rate):
         size = len(indl)
+        new_indl = indl.copy()
         for i in range(size):
             if random.random() < mutation_rate:
-                indl[i] = (indl[i] + 1) % 2
+                new_indl[i] = (new_indl[i] + 1) % 2
         
-        return indl
+        return new_indl

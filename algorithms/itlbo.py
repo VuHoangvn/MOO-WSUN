@@ -2,6 +2,7 @@ import sys
 import os
 import numpy as np
 import random
+import copy
 from operator import itemgetter
 
 from .algorithm import Algorithm
@@ -54,11 +55,12 @@ class ITLBO(Algorithm):
         temp = []
         for i in range(self.pop_size):
             if lib_commons.is_dominate(self.cost[i], mean_student):
-                temp.append(self.population[i])
+                indl = self.population[i].copy()
+                temp.append(indl)
             else:
                 mutation = self.mutation(self.population[i], mutation_rate)
                 temp.append(mutation)
-        ## calculate temporary cost
+        # calculate temporary cost
         self.fitness.set_population(np.array(temp))
         temp_cost = self.fitness.getCost()
 
@@ -67,7 +69,7 @@ class ITLBO(Algorithm):
         all_difference_mean = []
         for subject_id, teacher_id in zip(subject, self.teachers):
             difference_mean = []
-            teacher = self.population[teacher_id]
+            teacher = self.population[teacher_id].copy()
             for id in range(self.pop_size):
                 if id == teacher_id:
                     difference_mean.append(teacher)
@@ -91,10 +93,10 @@ class ITLBO(Algorithm):
         self.cost = self.fitness.getCost()
         self.rank = lib_commons.fast_non_dominated_sort(self.cost)
         self.best = lib_commons.find_bests(self.rank)
-        result = []
-        for i in self.bests:
-            result.append(self.cost[i])
-        print(result)
+        # result = []
+        # for i in self.bests:
+        #     result.append(self.cost[i])
+        # print(result)
         
 
     def learner_phase(self):
@@ -138,7 +140,7 @@ class ITLBO(Algorithm):
     def next_generation(self):
         self.teacher_selection()
         self.teacher_phase()
-        # self.learner_phase()
+        self.learner_phase()
 
     def run(self):
         generations = cfg["generations"]
