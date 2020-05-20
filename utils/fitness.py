@@ -53,15 +53,15 @@ class Fitness:
 
 	def get_max_loss(self):
 		no_sensors = self.data.num_of_sensors
-		max = [-99999] * self.pop_size
+		sum_loss = [0 for _ in range(self.pop_size)]
 		loss_matrix = self.data.comm_loss_matrix
 		for s in range(self.pop_size):
 			for i in range(no_sensors):
 				for j in range(i+1, no_sensors):
-					if self.population[s][i] == 1 and self.population[s][j] == 1 and loss_matrix[i][j] > max[s]:
-						max[s] = loss_matrix[i][j]
+					if self.population[s][i] == 1 and self.population[s][j] == 1:
+						sum_loss[s] += loss_matrix[i][j]
 		
-		self.loss = max
+		self.loss = sum_loss
 		return self.loss
 
 	def get_no_sensors(self):

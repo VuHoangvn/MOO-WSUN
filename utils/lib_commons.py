@@ -1,8 +1,10 @@
 import yaml
 import numpy as np 
+from collections import namedtuple
+
 
 MAX_NUM = 1e6
-
+Cost = namedtuple('Cost', ['coverage', 'loss', 'squantity'])
 
 def read_yaml(filepath):
     '''
@@ -21,6 +23,17 @@ def generate_lamda(size):
         lamda[i-1][1] = round(abs(1 - dis * (i + 1)), 2)
         lamda[i-1][2] = round(abs(1 - dis * (i + 2)), 2)
     return lamda
+
+def is_dominate(cost1, cost2):
+    # return true if 1 dominate 2
+    return cost1[0] >= cost2[0] and cost1[1] <= cost2[1] and cost1[2] <= cost2[2] and (cost1[0] > cost2[0] or cost1[1] < cost2[1] or cost1[2] < cost2[2])
+
+def get_mean_student(cost):
+    pop_size = len(cost)
+    mean_coverage = sum(c[0] for c in cost)/pop_size
+    mean_loss = sum(c[1] for c in cost)/pop_size
+    mean_squantity = sum(c[2] for c in cost)/pop_size
+    return Cost(mean_coverage, mean_loss, mean_squantity)
 
 def fast_non_dominated_sort(cost):
     size = len(cost)

@@ -2,8 +2,11 @@ import sys
 import os
 import numpy as np
 import random
+from operator import itemgetter
 
 from .algorithm import Algorithm
+
+
 
 ROOT = os.path.dirname(os.path.abspath(__file__))+"/../"
 sys.path.append(ROOT)
@@ -16,9 +19,8 @@ cfg_all = lib_commons.read_yaml(ROOT + "config/config.yaml")
 cfg = cfg_all["itlbo"]
 TF = cfg["teaching_factor"]
 mutation_rate = cfg["mutation_rate"]
-threshold = cfg["mean_threshold"]
-# min_coverage = cfg["min_coverage"]
-# max_sensor_rate = cfg["max_sensor_rate"]
+interactive_threshold = cfg["interactive_threshold"] 
+threshold = cfg["threshold"]
 subject = [0,1,2]   # coverage, loss, squantity
 
 
@@ -44,124 +46,99 @@ class ITLBO(Algorithm):
         self.teachers.append(loss_teacher)
         self.teachers.append(squantity_teacher)
 
-    def get_mean_student(self):
-        mean_student = np.zeros(self.indl_size)
-        
-        for indl in self.population:
-            for i in range(self.indl_size):
-                mean_student[i] += indl[i]/self.pop_size
-        
-        for i in range(self.indl_size):
-            if mean_student[i] < threshold:
-                mean_student[i] = 0
-            else:
-                mean_student[i] = 1
-        
-        return mean_student
 
-    
     def teacher_phase(self):
-        mean_student = self.get_mean_student()
-
+        mean_student = lib_commons.get_mean_student(self.cost)
+        
         ## get temporary value like midterm
         temp = []
         for i in range(self.pop_size):
-            student = np.zeros(self.indl_size)
-            for j in range(self.indl_size):
-                student[j] = mean_student[j] if random.random() > TF else mutate(self.population[i], mutation_rate)[j]
-            temp.append(student)
+            if lib_commons.is_dominate(self.cost[i], mean_student):
+                temp.append(self.population[i])
+            else:
+                mutation = self.mutation(self.population[i], mutation_rate)
+                temp.append(mutation)
         ## calculate temporary cost
         self.fitness.set_population(np.array(temp))
         temp_cost = self.fitness.getCost()
 
-        ## modify original itlbo by teaching each subject with its own teacher
+        # modify original itlbo by teaching each subject with its own teacher
         ## get difference_mean
-        difference_mean = []
-        for i in range(self.pop_size):
-            difference_mean.append(np.zeros(self.indl_size))
-        
+        all_difference_mean = []
         for subject_id, teacher_id in zip(subject, self.teachers):
+            difference_mean = []
             teacher = self.population[teacher_id]
             for id in range(self.pop_size):
                 if id == teacher_id:
+                    difference_mean.append(teacher)
                     continue
-                for i in range(self.indl_size):
-                    fitness_rate = (temp_cost[id][subject_id] /
-                        (self.cost[teacher_id][subject_id] + temp_cost[id][subject_id]))
-                    if random.random() < fitness_rate:
-                        difference_mean[id][i] = teacher[i]
-                    else:
-                        difference_mean[id][i] = temp[id][i]
-        self.fitness.set_population(np.array(difference_mean))
-        difference_cost = self.fitness.getCost()
-        
-        ## student after teacher phase
-        middle_students = []
-        for i in range(self.pop_size):
-            middle_students.append(np.zeros(self.indl_size))
-
-        for subject_id in subject:
-            for id in range(self.pop_size):
-                for i in range(self.indl_size):
-                    fitness_rate = (self.cost[id][subject_id] /
-                        (self.cost[id][subject_id] + difference_cost[id][subject_id]))
-                    if random.random() < fitness_rate:
-                        middle_students[id][i] = self.population[id][i]
-                    else:
-                        middle_students[id][i] = difference_mean[id][i]
-        
-        self.middle_students = self.select_by_non_sorting_dominated(self.population, middle_students)
-
-    def learner_phase(self):
-        interactive_threshold = cfg["interactive_threshold"]
-        temp = []
-        for i in range(self.pop_size):
-            temp.append(np.zeros(self.indl_size))
-        self.fitness.set_population(np.array(self.middle_students))
-        middle_cost = self.fitness.getCost()
-
-        ## temporary students interactives with each other
-        ## each student can ask another student to improve knowledge
-        for subject_id in subject:
-            for i in range(self.pop_size):
-                for j in range(self.pop_size):
-                    if random.random() < interactive_threshold or i == j:
-                        continue
-                    mutation = mutate(self.middle_students[i], mutation_rate)
-                    rand = random.random()
-                    if rand > threshold:
-                        temp[i] = mutation
-                    elif rand < (middle_cost[i][subject_id] / (middle_cost[i][subject_id] + middle_cost[j][subject_id])):
-                        temp[i] = self.middle_students[j]
-                    else:
-                        temp[i] = self.middle_students[i]
-        
-        ## final student obtain knowledge:
-        self.fitness.set_population(temp)
-        temp_cost = self.fitness.getCost()
-        final_students = []
-        for i in range(self.pop_size):
-            final_students.append(np.zeros(self.indl_size))
-
-        for subject_id in subject:
-            for i in range(self.pop_size):
-                rand = random.random()
-                if rand < (middle_cost[i][subject_id] / (temp_cost[i][subject_id] + middle_cost[j][subject_id])):
-                    final_students[i] = self.middle_students[i]
+                
+                fitness_rate = (temp_cost[id][subject_id] /
+                    (self.cost[teacher_id][subject_id] + temp_cost[id][subject_id]))
+                if random.random() < fitness_rate:
+                    crossover = self.one_point_crossover(temp[id], teacher)
+                    difference_mean.append(self.mutation(crossover, mutation_rate))
                 else:
-                    final_students[i] = temp[i]
+                    difference_mean.append(self.mutation(temp[id], mutation_rate))
+
+            all_difference_mean += difference_mean
         
-        new_gen = self.select_by_non_sorting_dominated(self.middle_students, final_students)
-        self.population = new_gen
-        self.fitness.set_population(new_gen)
+        after_study_student = self.select_by_non_sorting_dominated(temp, all_difference_mean)
+        
+        self.middle_students = self.select_by_non_sorting_dominated(self.population , after_study_student)
+        self.population = self.middle_students
+        self.fitness.set_population(self.population)
         self.cost = self.fitness.getCost()
         self.rank = lib_commons.fast_non_dominated_sort(self.cost)
+        self.best = lib_commons.find_bests(self.rank)
+        result = []
+        for i in self.bests:
+            result.append(self.cost[i])
+        print(result)
+        
+
+    def learner_phase(self):
+        self.fitness.set_population(np.array(self.middle_students))
+        middle_cost = self.fitness.getCost()
+        mean_student = lib_commons.get_mean_student(middle_cost)
+        all_temp = []
+
+        # temporary students interactives with each other
+        ## each student can ask another student to improve knowledge
+        for subject_id in subject:
+            temp = []
+            for i in range(self.pop_size):
+                temp.append(np.zeros(self.indl_size))
+            for i in range(self.pop_size):
+                for j in range(self.pop_size):
+                    if j < i:
+                        continue
+                    if random.random() < interactive_threshold:
+                        mutation = self.mutation(self.middle_students[i], mutation_rate)
+                        temp[i] = mutation
+                    else:
+                        temp[i] = self.one_point_crossover(self.middle_students[i], self.middle_students[j])
+                        temp[i] = self.mutation(temp[i], mutation_rate)
+            all_temp += temp
+
+        interactive_student = self.select_by_non_sorting_dominated([], all_temp)
+
+        final_students = self.select_by_non_sorting_dominated(self.middle_students, interactive_student)
+        self.population = final_students
+        self.fitness.set_population(self.population)
+        self.cost = self.fitness.getCost()
+        print("=================================================")
+        self.rank = lib_commons.fast_non_dominated_sort(self.cost)
         self.bests = lib_commons.find_bests(self.rank)
+        result = []
+        for i in self.bests:
+            result.append(self.cost[i])
+        print(result)
 
     def next_generation(self):
         self.teacher_selection()
         self.teacher_phase()
-        self.learner_phase()
+        # self.learner_phase()
 
     def run(self):
         generations = cfg["generations"]

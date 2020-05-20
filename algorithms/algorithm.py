@@ -44,8 +44,6 @@ class Algorithm:
 
             current_elem = list(filter(lambda elem: elem[1] == i, enumerate(total_rank)))
             for elem in current_elem:
-                if total_cost[elem[0]][0] < min_coverage or total_cost[elem[0]][2] > max_sensor_rate * self.indl_size:
-                    continue
                 current_rank_elem.append(total_student[elem[0]])
             
             if total_rank.count(i) + current_size <= self.pop_size:
@@ -56,9 +54,10 @@ class Algorithm:
                     new_pop.append(current_rank_elem[j])
                     current_size += 1
         
-        if len(new_pop) == 0:
-            for i in range(self.pop_size):
-                new_pop.append(total_student[i+2])
+        # if len(new_pop) == 0:
+        #     for i in range(self.pop_size):
+        #         index = np.random.randint(len(total_student))
+        #         new_pop.append(total_student[index])
         if current_size < self.pop_size:
             stop = len(new_pop)
             for i in range(self.pop_size - current_size):
@@ -122,7 +121,6 @@ class Algorithm:
         size = len(indl)
         for i in range(size):
             if random.random() < mutation_rate:
-                mutation_point = np.random.randint(size)
-                indl[i], indl[mutation_point] = indl[mutation_point], indl[i]
+                indl[i] = (indl[i] + 1) % 2
         
         return indl

@@ -33,7 +33,8 @@ itlbo:
   num_teacher: 5
   adaptive_teaching_factor: [1,2]
   generations: 100
-  mean_threshold: 0.75
+  # mean_threshold: 0.75
   teaching_factor: 0.75
-  mutation_rate: 0.05
+  mutation_rate: 0.02
   interactive_threshold: 0.5
+  threshold: 0.7

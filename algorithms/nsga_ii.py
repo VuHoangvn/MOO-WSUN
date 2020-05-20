@@ -98,6 +98,7 @@ class NSGA_II(Algorithm):
         self.fitness.set_population(self.population)
         self.cost = self.fitness.getCost()
         self.rank = lib_commons.fast_non_dominated_sort(self.cost)
+        print(self.result)
     
     def next_generation(self):
         self.generate_offspring()
