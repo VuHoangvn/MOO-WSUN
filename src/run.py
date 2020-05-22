@@ -25,18 +25,18 @@ def run(data_file, iteration, output_dir):
         output_file.append(file)
 
     output_itlbo = output_file[0] + "/gen_" + str(iteration)
-    # output_nsga_ii = output_file[1] + "/gen_" + str(iteration)
-    # output_mode = output_file[2] + "/gen_" + str(iteration)
-    # output_moea_d = output_file[3] + "/gen_" + str(iteration)
+    output_nsga_ii = output_file[1] + "/gen_" + str(iteration)
+    output_mode = output_file[2] + "/gen_" + str(iteration)
+    output_moea_d = output_file[3] + "/gen_" + str(iteration)
 
     itlbo = ITLBO(population, data, output_itlbo)
-    # moea_d = MOEA_D(population, data, output_moea_d)
-    # nsga_ii = NSGA_II(population, data, output_nsga_ii)
-    # mode = MODE(population, data, output_mode)
+    moea_d = MOEA_D(population, data, output_moea_d)
+    nsga_ii = NSGA_II(population, data, output_nsga_ii)
+    mode = MODE(population, data, output_mode)
     
-    # mode.run()
-    # moea_d.run()
-    # nsga_ii.run()
+    mode.run()
+    moea_d.run()
+    nsga_ii.run()
     itlbo.run()
        
 if __name__ == '__main__':
@@ -61,6 +61,3 @@ if __name__ == '__main__':
                 print('LOOP ', iteration)
                 print('---------------------------------------------')
                 run(input_file, iteration, output_dir)
-                break
-            break
-        break

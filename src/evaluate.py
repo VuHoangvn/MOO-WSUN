@@ -1,6 +1,8 @@
 import sys
 import os
 import math
+import numpy as np
+import statistics
 from collections import namedtuple
 from operator import itemgetter
 
@@ -26,10 +28,6 @@ def spacing(all_cost):
     for i, genCost in enumerate(all_cost):
         d = distance(genCost)
         mean = sum(di for di in d) / len(d)
-        # if i == 1:
-        #     print(mean)
-        #     print(d)
-        #     print("-----------------")
         s = math.sqrt(sum((di - mean)**2 for di in d)) / (len(d) - 1)
         space.append(s)
     
@@ -61,6 +59,7 @@ def dominate(cost1, cost2):
 
 def coverage(all_result):
     algos = ["itlbo", "mode", "moea_d", "nsga_ii"]
+    
     all_coverage = []
     for i in range(len(all_result[algos[0]])):
         all_coverage.append([])
@@ -69,6 +68,7 @@ def coverage(all_result):
             for k in range(len(algos)):
                 if j == k:
                     all_coverage[i][j].append(0)
+                    continue
                 num_dominate = 0
                 for cost_j in all_result[algos[j]][i]:
                     for cost_k in all_result[algos[k]][i]:
@@ -77,18 +77,29 @@ def coverage(all_result):
                             break
                 all_coverage[i][j].append(num_dominate/len(all_result[algos[j]][i]))
     
-    print(all_coverage[0])
                 
 
 def run():
     # read results
     algos = ["itlbo", "mode", "moea_d", "nsga_ii"]
-    all_result = {}
-    for algo in algos:
-        all_result[algo] = getAllGenerationCost(algo)
-        # space = spacing(all_result[algo])
-        # print(algo, ":",space)
-        # MS = maximum_spread(all_result[algo])
-    coverage(all_result)
+    dirName = "../output/small_data"
+    dirs = ['no-dem1_r25_1', 'no-dem1_r30_1', 'no-dem2_r25_1', 'no-dem2_r30_1']
+    # dirs = os.listdir(dirName)
+    for dir in dirs:
+        all_result = {}
+        all_space = {}
+        all_MS = {}
+        dir_path = dirName + '/' + dir
+        for algo in algos:
+            all_result[algo] = getAllGenerationCost(algo, dir_path)
+            space = spacing(all_result[algo])
+            mean_space = statistics.mean(space)
+            stdev_space = statistics.stdev(space)
+            print(mean_space, stdev_space)
+            all_space[algo] = space
+            MS = maximum_spread(all_result[algo])
+            all_MS[algo] = MS
+        coverage(all_result)
+        break
 
 run()

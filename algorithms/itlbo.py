@@ -132,10 +132,10 @@ class ITLBO(Algorithm):
         print("=================================================")
         self.rank = lib_commons.fast_non_dominated_sort(self.cost)
         self.bests = lib_commons.find_bests(self.rank)
-        result = []
-        for i in self.bests:
-            result.append(self.cost[i])
-        print(result)
+        # result = []
+        # for i in self.bests:
+        #     result.append(self.cost[i])
+        # print(result)
 
     def next_generation(self):
         self.teacher_selection()

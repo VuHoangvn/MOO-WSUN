@@ -7,22 +7,23 @@ Cost = namedtuple('Cost', ['coverage', 'loss', 'squantity'])
 ROOT = os.path.dirname(os.path.abspath(__file__))+"/../"
 sys.path.append(ROOT)
 
-def getAllGenerationCost(algoType):
-    dirName = "../output_eval/" + str(algoType)
-    files = os.listdir(dirName)
+def getAllGenerationCost(algoType, dir):
+    
+    dir_path = dir + '/' + str(algoType)
+    files = os.listdir(dir_path)
     cost = []
     
     for i in range(len(files)):
         cost.append([])
-        path = dirName + "/" + str(files[i])
+        path = dir_path + "/" + str(files[i])
         f = open(path, 'r')
         
         for line in f:
             c, l, s = line.split()
             cost[i].append(Cost(c, l, s))
         f.close()
-
     return cost
 
 # cost = getAllGenerationCost("itlbo")
-# print(len(cost[0]))
+# for key in cost.keys():
+#     print(key)
