@@ -11,6 +11,7 @@ Cost = namedtuple('Cost', ['coverage', 'loss', 'squantity'])
 ROOT = os.path.dirname(os.path.abspath(__file__))+"/../"
 sys.path.append(ROOT)
 from output import getAllGenerationCost
+from utils import lib_commons
 
 def abs_distance(cost1, cost2):
     return abs(float(cost1[0]) - float(cost2[0])) + abs(float(cost1[1]) - float(cost2[1])) + abs(float(cost1[2]) - float(cost2[2]))
@@ -25,11 +26,12 @@ def distance(genCost):
 
 def spacing(all_cost):
     space = []
-    for i, genCost in enumerate(all_cost):
-        d = distance(genCost)
-        mean = sum(di for di in d) / len(d)
-        s = math.sqrt(sum((di - mean)**2 for di in d)) / (len(d) - 1)
-        space.append(s)
+    # for i, genCost in enumerate(all_cost):
+    # print(genCost)
+    d = distance(all_cost)
+    mean = sum(di for di in d) / len(d)
+    s = math.sqrt(sum((di - mean)**2 for di in d)) / (len(d) - 1)
+    space.append(s)
     
     return space
 
@@ -77,29 +79,55 @@ def coverage(all_result):
                             break
                 all_coverage[i][j].append(num_dominate/len(all_result[algos[j]][i]))
     
-                
+def find_pareto_all_generation(algo, dir_path):
+    all_result = getAllGenerationCost(algo, dir_path)
+    rank = lib_commons.fast_non_dominated_sort(all_result)
+    bests = lib_commons.find_bests(rank)
+    result = []
+    for i in bests:
+        result.append(all_result[i])
+    return result
 
-def run():
+def get_spacing(all_sheets, algos):
+    all_sheet_spacing = []
+    for i in range(len(all_sheets)):
+        space = {}
+        for algo in algos:
+            space[algo] = spacing(all_sheets[i][algo])
+        all_sheet_spacing.append(space)
+    
+    return all_sheet_spacing
+
+def get_all_sheet_result(algos):
     # read results
-    algos = ["itlbo", "mode", "moea_d", "nsga_ii"]
+    
     dirName = "../output/small_data"
-    dirs = ['no-dem1_r25_1', 'no-dem1_r30_1', 'no-dem2_r25_1', 'no-dem2_r30_1']
-    # dirs = os.listdir(dirName)
+    # dirs = ['no-dem1_r25_1']
+    dirs = os.listdir(dirName)
+    all_sheets = []
     for dir in dirs:
         all_result = {}
-        all_space = {}
-        all_MS = {}
+        # all_space = {}
+        # all_MS = {}
         dir_path = dirName + '/' + dir
         for algo in algos:
-            all_result[algo] = getAllGenerationCost(algo, dir_path)
-            space = spacing(all_result[algo])
-            mean_space = statistics.mean(space)
-            stdev_space = statistics.stdev(space)
-            print(mean_space, stdev_space)
-            all_space[algo] = space
-            MS = maximum_spread(all_result[algo])
-            all_MS[algo] = MS
-        coverage(all_result)
-        break
+           all_result[algo] = find_pareto_all_generation(algo, dir_path)
+        
+        all_sheets.append(all_result)
+        #    break
+        #     space = spacing(all_result[algo])
+        #     mean_space = statistics.mean(space)
+        #     stdev_space = statistics.stdev(space)
+        #     print(mean_space, stdev_space)
+        #     all_space[algo] = space
+        #     MS = maximum_spread(all_result[algo])
+        #     all_MS[algo] = MS
+        # coverage(all_result)
+    return all_sheets
 
+def run():
+    algos = ["itlbo", "mode", "moea_d", "nsga_ii"]
+    all_sheets = get_all_sheet_result(algos)
+    all_sheet_spacing = get_spacing(all_sheets, algos)
+    print(all_sheet_spacing)
 run()

@@ -14,14 +14,15 @@ def getAllGenerationCost(algoType, dir):
     cost = []
     
     for i in range(len(files)):
-        cost.append([])
+        # cost.append([])
         path = dir_path + "/" + str(files[i])
         f = open(path, 'r')
         
         for line in f:
             c, l, s = line.split()
-            cost[i].append(Cost(c, l, s))
+            cost.append(Cost(float(c), float(l), float(s)))
         f.close()
+    
     return cost
 
 # cost = getAllGenerationCost("itlbo")
