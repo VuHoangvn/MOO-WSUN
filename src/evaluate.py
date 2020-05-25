@@ -39,21 +39,21 @@ def maximum_spread(all_cost):
     MS = []
     max_obj = []
     min_obj = []
-    for i, genCost in enumerate(all_cost):
-        max_obj.append([])
-        min_obj.append([])
-        ms = 0
-        for k in range(len(all_cost[0][0])):
-            max_val = max(genCost, key = itemgetter(k))[k]
-            min_val = min(genCost, key = itemgetter(k))[k]
-            max_obj[i].append(max_val)
-            min_obj[i].append(min_val)
-            ms += abs(float(max_val) - float(min_val))
+    # for i, genCost in enumerate(all_cost):
+    #     max_obj.append([])
+    #     min_obj.append([])
+    ms = 0
+    for k in range(len(all_cost[0])):
+        max_val = max(all_cost, key = itemgetter(k))[k]
+        min_val = min(all_cost, key = itemgetter(k))[k]
+        # max_obj.append(max_val)
+        # min_obj.append(min_val)
+        ms += abs(float(max_val) - float(min_val))
 
-        ms = math.sqrt(ms)
-        MS.append(ms)
+    ms = math.sqrt(ms)
+    # MS.append(ms)
     
-    return MS
+    return ms
 
 def dominate(cost1, cost2):
     # return true if 1 dominate 2
@@ -98,6 +98,16 @@ def get_spacing(all_sheets, algos):
     
     return all_sheet_spacing
 
+def get_maximum_spread(all_sheets, algos):
+    all_sheet_ms = []
+    for i in range(len(all_sheets)):
+        ms = {}
+        for algo in algos:
+            ms[algo] = maximum_spread(all_sheets[i][algo])
+        all_sheet_ms.append(ms)
+    
+    return all_sheet_ms
+
 def get_all_sheet_result(algos):
     # read results
     
@@ -129,5 +139,9 @@ def run():
     algos = ["itlbo", "mode", "moea_d", "nsga_ii"]
     all_sheets = get_all_sheet_result(algos)
     all_sheet_spacing = get_spacing(all_sheets, algos)
-    print(all_sheet_spacing)
+    for s in all_sheet_spacing:
+        print(s)
+    # all_sheet_ms = get_maximum_spread(all_sheets, algos)
+    # for ms in all_sheet_ms:
+    #     print(ms)
 run()
