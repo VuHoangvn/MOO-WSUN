@@ -40,24 +40,45 @@ def run(data_file, iteration, output_dir):
     itlbo.run()
        
 if __name__ == '__main__':
-    for i in range(1, 11):
-        for j in range(25, 35, 5):
-            input_file = '../data/small_data/no-dem{}_r{}_1.in'.format(i, j)
-            output_dir = '../output/small_data/no-dem{}_r{}_1'.format(i, j)
+    # for i in range(1, 11):
+    #     for j in range(25, 35, 5):
+    #         input_file = '../data/small_data/no-dem{}_r{}_1.in'.format(i, j)
+    #         output_dir = '../output/small_data/no-dem{}_r{}_1'.format(i, j)
             
-            if not os.path.exists(output_dir):
-                os.makedirs(output_dir)
+    #         if not os.path.exists(output_dir):
+    #             os.makedirs(output_dir)
             
-            print('====================================================')
-            print('====================================================')
-            print('====================================================')
-            print('Running on input data file: ', input_file)
-            print('====================================================')
-            print('====================================================')
-            print('====================================================')
+    #         print('====================================================')
+    #         print('====================================================')
+    #         print('====================================================')
+    #         print('Running on input data file: ', input_file)
+    #         print('====================================================')
+    #         print('====================================================')
+    #         print('====================================================')
 
-            for iteration in range(NUM_ITER):
-                print('---------------------------------------------')
-                print('LOOP ', iteration)
-                print('---------------------------------------------')
-                run(input_file, iteration, output_dir)
+    #         for iteration in range(NUM_ITER):
+    #             print('---------------------------------------------')
+    #             print('LOOP ', iteration)
+    #             print('---------------------------------------------')
+    #             run(input_file, iteration, output_dir)
+    data_src = '../data/small_data'
+    output_src =  '../outpyt/small_data'
+    if not os.path.exists(output_src):
+        os.makedirs(output_src)
+    files = os.listdir(data_src)
+    for file in files:
+        output_path = output_src + '/' + str(file[:-4]) + '.txt'
+        input_file = data_src + '/' + file
+        print('====================================================')
+        print('====================================================')
+        print('====================================================')
+        print('Running on input data file: ', input_file)
+        print('====================================================')
+        print('====================================================')
+        print('====================================================')
+
+        for iteration in range(NUM_ITER):
+            print('---------------------------------------------')
+            print('LOOP ', iteration)
+            print('---------------------------------------------')
+            run(input_file, iteration, output_path)

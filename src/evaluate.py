@@ -25,60 +25,61 @@ def distance(genCost):
     return d
 
 def spacing(all_cost):
-    space = []
+    # space = []
     # for i, genCost in enumerate(all_cost):
     # print(genCost)
     d = distance(all_cost)
     mean = sum(di for di in d) / len(d)
     s = math.sqrt(sum((di - mean)**2 for di in d)) / (len(d) - 1)
-    space.append(s)
+    # space.append(s)
     
-    return space
+    return round(s, 2)
 
 def maximum_spread(all_cost):
-    MS = []
-    max_obj = []
-    min_obj = []
-    for i, genCost in enumerate(all_cost):
-        max_obj.append([])
-        min_obj.append([])
-        ms = 0
-        for k in range(len(all_cost[0][0])):
-            max_val = max(genCost, key = itemgetter(k))[k]
-            min_val = min(genCost, key = itemgetter(k))[k]
-            max_obj[i].append(max_val)
-            min_obj[i].append(min_val)
-            ms += abs(float(max_val) - float(min_val))
+    # MS = []
+    # max_obj = []
+    # min_obj = []
+    # for i, genCost in enumerate(all_cost):
+    #     max_obj.append([])
+    #     min_obj.append([])
+    ms = 0
+    for k in range(len(all_cost[0])):
+        max_val = max(all_cost, key = itemgetter(k))[k]
+        min_val = min(all_cost, key = itemgetter(k))[k]
+        # max_obj[i].append(max_val)
+        # min_obj[i].append(min_val)
+        ms += abs(float(max_val) - float(min_val))
 
-        ms = math.sqrt(ms)
-        MS.append(ms)
+    ms = math.sqrt(ms)
+        # MS.append(ms)
     
-    return MS
+    return round(ms, 2)
 
 def dominate(cost1, cost2):
     # return true if 1 dominate 2
     return cost1[0] >= cost2[0] and cost1[1] <= cost2[1] and cost1[2] <= cost2[2] and (cost1[0] > cost2[0] or cost1[1] < cost2[1] or cost1[2] < cost2[2])
 
-def coverage(all_result):
-    algos = ["itlbo", "mode", "moea_d", "nsga_ii"]
+def coverage(all_result, algos):
+    # algos = ["itlbo", "mode", "moea_d", "nsga_ii"]
     
     all_coverage = []
-    for i in range(len(all_result[algos[0]])):
+    # for i in range(len(all_result[algos[0]])):
+    #     all_coverage.append([])
+    for i in range(len(algos)):
         all_coverage.append([])
-        for j in range(len(algos)):
-            all_coverage[i].append([])
-            for k in range(len(algos)):
-                if j == k:
-                    all_coverage[i][j].append(0)
-                    continue
-                num_dominate = 0
-                for cost_j in all_result[algos[j]][i]:
-                    for cost_k in all_result[algos[k]][i]:
-                        if dominate(cost_k, cost_j):
-                            num_dominate += 1
-                            break
-                all_coverage[i][j].append(num_dominate/len(all_result[algos[j]][i]))
-    
+        for k in range(len(algos)):
+            if i == k:
+                all_coverage[i].append(0)
+                continue
+            num_dominate = 0
+            for cost_k in all_result[algos[k]]:
+                for cost_i in all_result[algos[i]]:
+                    if dominate(cost_i, cost_k):
+                        num_dominate += 1
+                        break
+            all_coverage[i].append(round(num_dominate/len(all_result[algos[k]]), 2))
+    return all_coverage
+
 def find_pareto_all_generation(algo, dir_path):
     all_result = getAllGenerationCost(algo, dir_path)
     rank = lib_commons.fast_non_dominated_sort(all_result)
@@ -97,6 +98,24 @@ def get_spacing(all_sheets, algos):
         all_sheet_spacing.append(space)
     
     return all_sheet_spacing
+
+def get_maximum_spread(all_sheets, algos):
+    all_sheet_ms = []
+    for i in range(len(all_sheets)):
+        ms = {}
+        for algo in algos:
+            ms[algo] = maximum_spread(all_sheets[i][algo])
+        all_sheet_ms.append(ms)
+    
+    return all_sheet_ms
+
+def get_coverage(all_sheets, algos):
+    all_sheet_coverage = []
+    for i in range(len(all_sheets)):
+        cover = coverage(all_sheets[i], algos)
+        all_sheet_coverage.append(cover)
+    
+    return all_sheet_coverage
 
 def get_all_sheet_result(algos):
     # read results
@@ -125,9 +144,12 @@ def get_all_sheet_result(algos):
         # coverage(all_result)
     return all_sheets
 
-def run():
+def get_all_metrics():
     algos = ["itlbo", "mode", "moea_d", "nsga_ii"]
     all_sheets = get_all_sheet_result(algos)
     all_sheet_spacing = get_spacing(all_sheets, algos)
-    print(all_sheet_spacing)
-run()
+    all_sheet_ms = get_maximum_spread(all_sheets, algos)
+    all_coverage = get_coverage(all_sheets, algos)
+    return all_sheet_spacing, all_sheet_ms, all_coverage
+
+# run()
