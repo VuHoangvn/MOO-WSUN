@@ -66,9 +66,10 @@ if __name__ == '__main__':
     if not os.path.exists(output_src):
         os.makedirs(output_src)
     files = os.listdir(data_src)
-    for file in files:
-        output_path = output_src + '/' + str(file[:-4]) + '.txt'
-        input_file = data_src + '/' + file
+    no_files = len(files)
+    for i in range(23):
+        output_path = output_src + '/' + str(files[i][:-4]) + '.txt'
+        input_file = data_src + '/' + files[i]
         print('====================================================')
         print('====================================================')
         print('====================================================')
