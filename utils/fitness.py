@@ -39,7 +39,6 @@ class Fitness:
 				for j in range(self.data.num_of_sensors):
 					if self.population[s][j] == 1 and ss_cover[i][j] == 1:
 						elem_cover[s][i] += 1
-
 		sum_ss_cover = [0] * self.pop_size
 		for s in range(self.pop_size):
 			for i in range(m):
