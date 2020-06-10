@@ -43,6 +43,8 @@ class Input:
                 d = distance(self.sensors[sn], self.sensors[ss])
                 loss = 6.4 + 20 * math.log(10, d) + 20 * math.log(10, Constants.get_beta()
                                                                   ) + 8.69 * Constants.get_anpha() * d
+                if loss < 0:
+                    loss = 0
                 comm_loss_matrix[sn][ss] = loss
                 comm_loss_matrix[ss][sn] = loss
 
@@ -60,14 +62,14 @@ class Input:
                     x_atan = 0
                 else:
                     x_atan = numpy.arctan(
-                        (self.relays[rn].y-self.sensors[sn].y)/(self.relays[rn].x - self.sensors[sn].x))
+                        abs(self.relays[rn].y-self.sensors[sn].y)/(self.relays[rn].x - self.sensors[sn].x))
                 
                 if d == 0:
                     z_atan = 0
                 else:
                     z_atan = numpy.arctan(
-                        (self.relays[rn].z - self.sensors[sn].z)/d)
-                if (d <= 2*R) and (x_atan >= 0.4 and x_atan <= 0.7) and (z_atan >= 0.3 and z_atan <= 0.9):
+                        abs(self.relays[rn].z - self.sensors[sn].z)/d)
+                if (d <= 2*R) and (x_atan >= 0.3 and x_atan <= 0.7) and (z_atan >= 0.3 and z_atan <= 0.9):
                     sensor_coverage[rn][sn] = 1
                     # sensor_coverage[sn][rn] = 1
                 else:
