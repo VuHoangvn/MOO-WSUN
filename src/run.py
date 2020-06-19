@@ -61,8 +61,8 @@ if __name__ == '__main__':
     #             print('LOOP ', iteration)
     #             print('---------------------------------------------')
     #             run(input_file, iteration, output_dir)
-    data_src = '../data/small_data/uu'
-    output_src =  '../outpyt/small_data/uu'
+    data_src = '../data/small_data/ga'
+    output_src =  '../outpyt/small_data/ga'
     if not os.path.exists(output_src):
         os.makedirs(output_src)
     files = os.listdir(data_src)
