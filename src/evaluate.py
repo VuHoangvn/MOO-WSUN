@@ -36,15 +36,9 @@ def spacing(all_cost):
     return round(s, 2)
 
 def maximum_spread(all_cost):
-<<<<<<< HEAD
-    # MS = []
-    # max_obj = []
-    # min_obj = []
-=======
     MS = []
     max_obj = []
     min_obj = []
->>>>>>> 80d7eff6fe23eb47694c18a521dba62d57f7ff98
     # for i, genCost in enumerate(all_cost):
     #     max_obj.append([])
     #     min_obj.append([])
@@ -52,7 +46,6 @@ def maximum_spread(all_cost):
     for k in range(len(all_cost[0])):
         max_val = max(all_cost, key = itemgetter(k))[k]
         min_val = min(all_cost, key = itemgetter(k))[k]
-<<<<<<< HEAD
         # max_obj[i].append(max_val)
         # min_obj[i].append(min_val)
         ms += abs(float(max_val) - float(min_val))
@@ -61,16 +54,6 @@ def maximum_spread(all_cost):
         # MS.append(ms)
     
     return round(ms, 2)
-=======
-        # max_obj.append(max_val)
-        # min_obj.append(min_val)
-        ms += abs(float(max_val) - float(min_val))
-
-    ms = math.sqrt(ms)
-    # MS.append(ms)
-    
-    return ms
->>>>>>> 80d7eff6fe23eb47694c18a521dba62d57f7ff98
 
 def dominate(cost1, cost2):
     # return true if 1 dominate 2
@@ -137,7 +120,7 @@ def get_coverage(all_sheets, algos):
 def get_all_sheet_result(algos):
     # read results
     
-    dirName = "../output/small_data"
+    dirName = "../outpyt/small_data/no"
     # dirs = ['no-dem1_r25_1']
     dirs = os.listdir(dirName)
     all_sheets = []
