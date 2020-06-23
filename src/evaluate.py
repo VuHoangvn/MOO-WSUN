@@ -114,16 +114,24 @@ def get_coverage(all_sheets, algos):
     for i in range(len(all_sheets)):
         cover = coverage(all_sheets[i], algos)
         all_sheet_coverage.append(cover)
-    
-    return all_sheet_coverage
+    all_sheet_coverage = np.array(all_sheet_coverage)
+    result = all_sheet_coverage[0]
+    for i in range(1, len(all_sheet_coverage)):
+        result += all_sheet_coverage[i]
+    result = result / len(all_sheet_coverage)
+    for i in range(len(result)):
+        for j in range(len(result[0])):
+            result[i][j] = round(result[i][j], 2)
+    # print(result)
+    return result
 
-def get_all_sheet_result(algos):
+def get_all_sheet_result(algos, dirName):
     # read results
     
-    dirName = "../outpyt/small_data/no"
     # dirs = ['no-dem1_r25_1']
     dirs = os.listdir(dirName)
     all_sheets = []
+    all_dir = []
     for dir in dirs:
         all_result = {}
         # all_space = {}
@@ -133,6 +141,7 @@ def get_all_sheet_result(algos):
            all_result[algo] = find_pareto_all_generation(algo, dir_path)
         
         all_sheets.append(all_result)
+        all_dir.append(dir)
         #    break
         #     space = spacing(all_result[algo])
         #     mean_space = statistics.mean(space)
@@ -142,14 +151,15 @@ def get_all_sheet_result(algos):
         #     MS = maximum_spread(all_result[algo])
         #     all_MS[algo] = MS
         # coverage(all_result)
-    return all_sheets
+    return all_sheets, all_dir
 
-def get_all_metrics():
+def get_all_metrics(dirName):
     algos = ["itlbo", "mode", "moea_d", "nsga_ii"]
-    all_sheets = get_all_sheet_result(algos)
+    all_sheets, all_dir = get_all_sheet_result(algos, dirName)
     all_sheet_spacing = get_spacing(all_sheets, algos)
     all_sheet_ms = get_maximum_spread(all_sheets, algos)
     all_coverage = get_coverage(all_sheets, algos)
-    return all_sheet_spacing, all_sheet_ms, all_coverage
+    return all_sheet_spacing, all_sheet_ms, all_coverage, all_dir
 
 # run()
+# get_all_metrics("../outpyt/small_data/ga")
