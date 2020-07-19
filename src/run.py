@@ -71,7 +71,7 @@ if __name__ == '__main__':
     files = os.listdir(data_src)
     no_files = len(files)
     for i in range(no_files):
-        output_path = output_src + '/' + str(files[i][:-4]) + '.txt'
+        output_path = output_src + '/' + str(files[i][:-4])
         input_file = data_src + '/' + files[i]
         print('====================================================')
         print('====================================================')
