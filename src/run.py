@@ -9,6 +9,9 @@ from utils.population_generation import initialPopulation
 from algorithms import ITLBO, MODE, MOEA_D, NSGA_II
 
 NUM_ITER = 30
+def create_directory(directory):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
 def run(data_file, iteration, output_dir):
     data = Input.from_file(data_file)
@@ -62,7 +65,7 @@ if __name__ == '__main__':
     #             print('---------------------------------------------')
     #             run(input_file, iteration, output_dir)
     data_src = '../data/big_data/no'
-    output_src =  '../outpyt/big_data/no'
+    output_src =  '../output/big_data/no'
     if not os.path.exists(output_src):
         os.makedirs(output_src)
     files = os.listdir(data_src)
