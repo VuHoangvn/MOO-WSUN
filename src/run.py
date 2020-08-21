@@ -6,7 +6,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__))+"/../"
 sys.path.append(ROOT)
 
 from utils.population_generation import initialPopulation
-from algorithms import ITLBO, MODE, MOEA_D, NSGA_II
+from algorithms import ITLBO, MODE, MOEA_D, NSGA_II, TLBO
 
 NUM_ITER = 30
 def create_directory(directory):
@@ -41,29 +41,18 @@ def run(data_file, iteration, output_dir):
     moea_d.run()
     nsga_ii.run()
     itlbo.run()
+
+def run1(data_file, iteration, output_dir):
+    data = Input.from_file(data_file)
+    sensor_quantity = data.num_of_sensors
+    population = initialPopulation(sensor_quantity)
+
+    output = os.path.join(output_dir, 'tlbo', f'gen_{iteration}')
+    tlbo = TLBO(population, data, output)
+    
+    tlbo.run()
        
 if __name__ == '__main__':
-    # for i in range(1, 11):
-    #     for j in range(25, 35, 5):
-    #         input_file = '../data/small_data/no-dem{}_r{}_1.in'.format(i, j)
-    #         output_dir = '../output/small_data/no-dem{}_r{}_1'.format(i, j)
-            
-    #         if not os.path.exists(output_dir):
-    #             os.makedirs(output_dir)
-            
-    #         print('====================================================')
-    #         print('====================================================')
-    #         print('====================================================')
-    #         print('Running on input data file: ', input_file)
-    #         print('====================================================')
-    #         print('====================================================')
-    #         print('====================================================')
-
-    #         for iteration in range(NUM_ITER):
-    #             print('---------------------------------------------')
-    #             print('LOOP ', iteration)
-    #             print('---------------------------------------------')
-    #             run(input_file, iteration, output_dir)
     data_src = '../data/big_data/no_1xx'
     output_src =  '../output/big_data/no_1xx'
     if not os.path.exists(output_src):
@@ -85,4 +74,4 @@ if __name__ == '__main__':
             print('---------------------------------------------')
             print('LOOP ', iteration)
             print('---------------------------------------------')
-            run(input_file, iteration, output_path)
+            run1(input_file, iteration, output_path)

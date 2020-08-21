@@ -28,6 +28,9 @@ moea_d:
   generations: 100
   T: 3  # number of neighborhoods
 
+# teaching learning based optimization
+tlbo:
+  generations: 100
 # improve teaching-learning-based optimization
 itlbo:
   num_teacher: 5

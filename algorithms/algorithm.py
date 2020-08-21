@@ -1,8 +1,8 @@
-import sys
 import os
-import numpy as np
-import random
+import sys
 import copy
+import random
+import numpy as np
 
 ROOT = os.path.dirname(os.path.abspath(__file__))+"/../"
 sys.path.append(ROOT)
