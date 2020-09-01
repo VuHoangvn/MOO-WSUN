@@ -20,8 +20,16 @@ cfg = cfg_all["tlbo"]
 class TLBO(Algorithm):
     def teacher_selection(self):
         candidate = [index for index in range(len(self.rank)) if self.rank[index] == 1]
-        print(candidate)
-    
+        Tl_index = random.choice(candidate)
+        self.Tl = self.cost[Tl_index]
+        self.num_teachers = cfg['num_teachers']
+        r2 = random.random()
+        r3 = random.random()
+        Ts2 = self.Tl
+        Ts3 = self.Tl
+
+        print(Ts2)
+
     def teacher_phase(self):
         pass
     

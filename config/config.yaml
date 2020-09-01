@@ -31,6 +31,7 @@ moea_d:
 # teaching learning based optimization
 tlbo:
   generations: 100
+  num_teachers: 3
 # improve teaching-learning-based optimization
 itlbo:
   num_teacher: 5
